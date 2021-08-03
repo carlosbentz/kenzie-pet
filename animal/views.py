@@ -18,28 +18,26 @@ class AnimalView(APIView):
 
     def post(self, request):
         data = request.data
+
+        group = Group.objects.get_or_create(**data["group"])
+
         animal = Animal.objects.create(
                                 name=data["name"], 
                                 age=data["age"], 
                                 weight=data["weight"], 
                                 sex=data["sex"], 
-                                group=Group.objects.create(**data["group"])
+                                group=group[0]
                             )
         
         for characteristic in data["characteristics"]:
-            animal.characteristics.add(Characteristic.objects.create(**characteristic))
+            characteristic = Characteristic.objects.get_or_create(name=characteristic["name"])
+
+            animal.characteristics.add(characteristic[0])
 
         serializer = AnimalSerializer(animal)
 
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def delete(self, request, animal_id):
-        animal = get_object_or_404(Animal, id=animal_id)
-        
-        animal.delete()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class AnimalRetrieveView(APIView):
     def get(self, request, animal_id=None):
@@ -51,3 +49,11 @@ class AnimalRetrieveView(APIView):
 
             except ObjectDoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+    def delete(self, request, animal_id):
+        animal = get_object_or_404(Animal, id=animal_id)
+        
+        animal.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
