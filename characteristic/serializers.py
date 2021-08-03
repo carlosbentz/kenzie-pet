@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from animal.serializers import AnimalSerializer
 
 
 class CharactertisticSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     name = serializers.CharField()
-    animals = AnimalSerializer(many=True)

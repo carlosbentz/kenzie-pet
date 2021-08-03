@@ -2,7 +2,8 @@ from rest_framework import serializers
 from characteristic.serializers import CharactertisticSerializer
 from group.serializers import GroupSerializer
 
-class Animal(serializers.Serializer):
+class AnimalSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     name = serializers.CharField()
     age = serializers.FloatField()
     weight = serializers.FloatField()
