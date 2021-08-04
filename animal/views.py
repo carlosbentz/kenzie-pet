@@ -2,12 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Animal
 from .serializers import AnimalSerializer
+from group.serializers import GroupSerializer
 from group.models import Group
 from characteristic.models import Characteristic
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-
+from ipdb import set_trace
 
 
 class AnimalView(APIView):
@@ -18,24 +19,23 @@ class AnimalView(APIView):
 
     def post(self, request):
         data = request.data
+        serializer = AnimalSerializer(data=request.data)
 
-        group = Group.objects.get_or_create(**data["group"])
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        animal = Animal.objects.create(
-                                name=data["name"], 
-                                age=data["age"], 
-                                weight=data["weight"], 
-                                sex=data["sex"], 
-                                group=group[0]
-                            )
-        
-        for characteristic in data["characteristics"]:
-            characteristic = Characteristic.objects.get_or_create(name=characteristic["name"])
+        serializer.validated_data["group"] = Group.objects.get_or_create(**serializer.validated_data["group"])[0]
 
-            animal.characteristics.add(characteristic[0])
+
+        characteristics = serializer.validated_data.pop("characteristics")
+
+        animal = Animal.objects.create(**serializer.validated_data)
+
+        for characteristic in characteristics:
+            animal.characteristics.add(Characteristic.objects.get_or_create(**characteristic)[0])
+
 
         serializer = AnimalSerializer(animal)
-
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

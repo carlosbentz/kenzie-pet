@@ -3,7 +3,7 @@ from characteristic.serializers import CharactertisticSerializer
 from group.serializers import GroupSerializer
 
 class AnimalSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
     age = serializers.FloatField()
     weight = serializers.FloatField()
